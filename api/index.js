@@ -6,6 +6,9 @@ const jwt = require("jsonwebtoken");
 const {default: mongoose} = require("mongoose");
 require("dotenv").config();
 const cookieparser = require("cookie-parser");
+const imageDownloader = require("image-downloader");
+const multer = require("multer");
+const fs = require("fs");
 
 const userModel = require("./models/userModel");
 
@@ -14,6 +17,7 @@ const jwtSecret = "asduiahbnsuirbausd";
 
 app.use(express.json());
 app.use(cookieparser());
+app.use("/uploads", express.static(__dirname + "/uploads"));
 app.use(
   cors({
     credentials: true,
@@ -42,9 +46,8 @@ try {
     res.json(user);
   });
 } catch (error) {
-  res.status(422).json(e);
+  res.status(422).json(error);
 }
-
 // !Login User
 
 app.post("/login", async (req, res) => {
@@ -92,6 +95,37 @@ app.get("/profile", (req, res) => {
 // !Logout Route
 app.post("/logout", (req, res) => {
   res.cookie("token", "").json(true);
+});
+
+app.post("/uploadByLink", async (req, res) => {
+  const {link} = req.body;
+  const newName = "photo" + Date.now() + ".jpg";
+
+  try {
+    await imageDownloader.image({
+      url: link,
+      dest: __dirname + "/uploads/" + newName,
+    });
+    res.json("uploads/" + newName);
+  } catch (error) {
+    res
+      .status(500)
+      .json({error: "Failed to upload image", details: error.message}); // Added error handling
+  }
+});
+
+const photosMiddleware = multer({dest: "uploads"});
+app.post("/upload", photosMiddleware.array("photos", 100), (req, res) => {
+  const uploadedFiles = [];
+  for (let i = 0; i < req.files.length; i++) {
+    const {path, originalname} = req.files[i];
+    const parts = originalname.split(".");
+    const ext = parts[parts.length - 1];
+    const newPath = path + "." + ext;
+    fs.renameSync(path, newPath);
+    uploadedFiles.push(newPath.replace("uploads/", ""));
+  }
+  res.json(uploadedFiles);
 });
 
 app.listen(4000);

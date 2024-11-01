@@ -1,7 +1,68 @@
+import {useState} from "react";
 import {Link, useParams} from "react-router-dom";
+import axios from "axios";
 
 function AccountPlace() {
   const {action} = useParams();
+  const [title, setTitle] = useState("");
+  const [address, setAddress] = useState("");
+  const [addedPhotos, setAddedPhotos] = useState([]);
+  const [photoLink, setPhotoLink] = useState("");
+  const [description, setDescription] = useState("");
+  const [perks, setPerks] = useState([]);
+  const [extraInfo, setExtraInfo] = useState("");
+  const [checkIn, setCheckIn] = useState("");
+  const [checkOut, setCheckOut] = useState("");
+  const [maxGuests, setMaxGuests] = useState(1);
+
+  function inputHeader(text) {
+    return <h2 className="mb-1 text-2xl mt-2">{text}</h2>;
+  }
+
+  function inputDescription(text) {
+    return <p className="text-sm text-gray-500 mb-1">{text}</p>;
+  }
+
+  function preInput(header, description) {
+    return (
+      <>
+        {inputHeader(header)}
+        {inputDescription(description)}
+      </>
+    );
+  }
+
+  async function addPhotoByLink(e) {
+    e.preventDefault();
+    const {data: filename} = await axios.post("/uploadByLink", {
+      link: photoLink,
+    });
+    setAddedPhotos((prev) => {
+      return [...prev, filename];
+    });
+    setPhotoLink("");
+  }
+
+  async function uploadPhoto(e) {
+    e.preventDefault();
+    const files = e.target.files;
+    const data = new FormData();
+
+    for (let i = 0; i < files.length; i++) {
+      data.append("photos", files[i]);
+    }
+
+    axios
+      .post("/upload", data, {
+        headers: {"Content-Type": "multipart/form-data"},
+      })
+      .then((response) => {
+        const {data: filename} = response;
+        setAddedPhotos((prev) => {
+          return [...prev, ...filename];
+        });
+      });
+  }
 
   return (
     <div>
@@ -32,39 +93,74 @@ function AccountPlace() {
       {action === "new" && (
         <div>
           <form>
-            <h2 className="mb-1 text-2xl mt-2">Title</h2>
-            <p className="text-sm text-gray-500 mb-1">
-              Title for your place. This will be the name used for advertising
-              your listing.
-            </p>
+            {preInput(
+              "Title",
+              "Title for your place. This will be the name used for advertising your listing."
+            )}
             <input
               type="text"
+              value={title}
+              onChange={(ev) => setTitle(ev.target.value)}
               className="md:w-2/5 px-2 py-1  rounded-lg w-full outline-none border-gray-500 border"
               placeholder="Title"
             />
-            <h2 className="mb-1 text-2xl mt-2">Address</h2>
-            <p className="text-sm text-gray-500 mb-1">
-              Address for this place.
-            </p>
+
+            {/* /////////////////// */}
+
+            {preInput("Address", "Address for this place.")}
+
             <input
               type="text"
+              value={address}
+              onChange={(ev) => setAddress(ev.target.value)}
               className="md:w-2/5 px-2 py-1 rounded-lg w-full outline-none border-gray-500 border"
               placeholder="Address"
             />
-            <h2 className="mb-1 text-2xl mt-2">Photos</h2>
-            <p className="text-sm text-gray-500 mb-1">more images = better</p>
+
+            {/* /////////////////// */}
+
+            {preInput("Photos", "more images = better")}
+
             <div className="flex gap-2">
+              {/* Upload by Link! */}
               <input
                 type="text"
+                value={photoLink}
+                onChange={(ev) => setPhotoLink(ev.target.value)}
                 className="md:w-2/5 px-2 py-1 rounded-lg w-full outline-none border-gray-500 border"
                 placeholder="Add using a link... jpg"
               />
-              <button className="px-2 py-2 rounded-lg font-semibold bg-blue-500 text-white text-xs uppercase">
+              <button
+                onClick={addPhotoByLink}
+                className="px-2 py-2 rounded-lg font-semibold bg-blue-500 text-white text-xs uppercas hover:bg-blue-600 transition-all"
+              >
                 Add Photo
               </button>
             </div>
-            <div className=" grid grid-cols-3 lg:grid-cols-6 md:grid-cols-4 mt-2">
-              <button className="flex w-48 md:w-96 items-center flex-col bg-transparent text-sm text-gray-600 border-2 border-gray-300 hover:border-blue-500 transition-all p-8">
+
+            <div className=" grid gap-2 grid-cols-3 lg:grid-cols-6 md:grid-cols-4 mt-2">
+              {addedPhotos.length > 0 &&
+                addedPhotos.map((link) => (
+                  // Showing the added photos
+                  <div className="">
+                    {/* Image of uploaded the photo */}
+                    <img
+                      className="rounded-xl"
+                      src={"http://localhost:4000/" + link}
+                      alt="Image uploaded by the user"
+                    />
+                  </div>
+                ))}
+              {/* ////////////// */}
+
+              <label className="h-32 w-48 flex md:w-96 items-center justify-center flex-col bg-transparent text-sm text-gray-600 border-2 rounded-xl border-gray-300 hover:border-blue-500 transition-all p-8 hover:cursor-pointer">
+                <input
+                  type="file"
+                  multiple
+                  className="hidden"
+                  accept=".jpg, .jpeg, .png"
+                  onChange={uploadPhoto}
+                />
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -80,24 +176,29 @@ function AccountPlace() {
                   />
                 </svg>
                 Upload from your device
-              </button>
+              </label>
             </div>
-            <h2 className="mb-1 text-2xl mt-2">Description</h2>
-            <p className="text-sm text-gray-500 mb-1">
-              Description for the place
-            </p>
+
+            {/* /////////////////// */}
+
+            {preInput("Description", "Description for the place")}
+
             <textarea
               type="text"
+              value={description}
+              onChange={(ev) => setDescription(ev.target.value)}
               className="md:w-2/5 px-2 py-1 rounded-lg w-full h-48 outline-none border-gray-500 border"
               placeholder="Description of the place"
             />
 
-            <h2 className="mb-1 text-2xl mt-2">Perks</h2>
-            <p className="text-sm text-gray-500 mb-1">
-              Select all the perks of your place
-            </p>
+            {/* /////////////////// */}
+
+            {preInput("Perks", "Select all the perks of your place")}
+
             {/* Labels below */}
             <div className="grid grid-cols-2 mt-2 lg:grid-cols-4 gap-2 md:w-3/4">
+              {/*  */}
+              {/* Wifi */}
               <label className="flex gap-2 items-center border-2 p-4 rounded-2xl tracking-tight cursor-pointer">
                 <input type="checkbox" name="" id="" />
                 <svg
@@ -117,6 +218,8 @@ function AccountPlace() {
 
                 <span>Wifi</span>
               </label>
+
+              {/* Parking */}
               <label className="flex gap-2 items-center border-2 p-4 rounded-2xl tracking-tight cursor-pointer">
                 <input type="checkbox" name="" id="" />
                 <svg
@@ -136,6 +239,8 @@ function AccountPlace() {
 
                 <span>Free Parking Spot</span>
               </label>
+
+              {/* TV */}
               <label className="flex gap-2 items-center border-2 p-4 rounded-2xl tracking-tight cursor-pointer">
                 <input type="checkbox" name="" id="" />
                 <svg
@@ -155,6 +260,8 @@ function AccountPlace() {
 
                 <span>TV</span>
               </label>
+
+              {/* Pets */}
               <label className="flex gap-2 items-center border-2 p-4 rounded-2xl tracking-tight cursor-pointer">
                 <input type="checkbox" name="" id="" />
                 <svg
@@ -174,6 +281,8 @@ function AccountPlace() {
 
                 <span>Pets</span>
               </label>
+
+              {/* Pvt Entrance */}
               <label className="flex gap-2 items-center border-2 p-4 rounded-2xl tracking-tight cursor-pointer">
                 <input type="checkbox" name="" id="" />
                 <svg
@@ -195,15 +304,66 @@ function AccountPlace() {
               </label>
             </div>
 
-            <h2 className="mb-1 text-2xl mt-2">Additional Information</h2>
-            <p className="text-sm text-gray-500 mb-1">
-              Provide additional information such as house rules etc.
-            </p>
+            {/* /////////////////// */}
+
+            {preInput(
+              "Additional Information",
+              "Provide additional information such as house rules etc."
+            )}
+
             <textarea
               type="text"
+              value={extraInfo}
+              onChange={(ev) => setExtraInfo(ev.target.value)}
               className="md:w-2/5 px-2 py-1 rounded-lg w-full h-48 outline-none border-gray-500 border"
               placeholder="Additional Information"
             />
+
+            {/* /////////////////// */}
+
+            {preInput(
+              "Check-in & out times",
+              "add the check-in&out times, remember to have some time window for cleaning the room between guests"
+            )}
+            <div className="grid gap-2 sm:grid-cols-3">
+              <div>
+                <h3 className="mt-2 ">Check in time</h3>
+                <input
+                  type="text"
+                  value={checkIn}
+                  onChange={(ev) => setCheckIn(ev.target.value)}
+                  className="md:w-2/5 px-2 py-1 rounded-lg w-full outline-none border-gray-500 border"
+                  placeholder="14:00"
+                />
+              </div>
+              <div>
+                <h3 className="mt-2 ">Check out time</h3>
+                <input
+                  type="text"
+                  value={checkOut}
+                  onChange={(ev) => setCheckOut(ev.target.value)}
+                  className="md:w-2/5 px-2 py-1 rounded-lg w-full outline-none border-gray-500 border"
+                  placeholder="12:00"
+                />
+              </div>
+              <div>
+                <h3 className="mt-2 ">Max number of guests</h3>
+                <input
+                  type="number"
+                  value={maxGuests}
+                  onChange={(ev) => setMaxGuests(ev.target.value)}
+                  className="md:w-2/5 px-2 py-1 rounded-lg w-full outline-none border-gray-500 border"
+                  placeholder="Example: 5"
+                />
+              </div>
+            </div>
+
+            {/* Save Button */}
+            <div>
+              <button className="px-4 py-2 mt-5 sm:w-32 w-full font-semibold bg-blue-500 hover:bg-blue-600 hover:shadow-md transition-all text-white rounded-full">
+                Save
+              </button>
+            </div>
           </form>
         </div>
       )}
