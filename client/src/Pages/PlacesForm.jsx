@@ -116,10 +116,7 @@ export default function PlacesForm() {
 
           {preInput("Photos", "more images = better")}
 
-          <PhotosUploader
-            addedPhotos={addedPhotos}
-            setAddedPhotos={setAddedPhotos}
-          />
+          <PhotosUploader addedPhotos={addedPhotos} onChange={setAddedPhotos} />
           {/* /////////////////// */}
 
           {preInput("Description", "Description for the place")}

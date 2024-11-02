@@ -21,16 +21,16 @@ app.use(cookieparser());
 app.use("/uploads", express.static(__dirname + "/uploads"));
 app.use(
   cors({
+    origin: ["http://127.0.0.1:5173", "http://localhost:5173"],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    origin: "http://127.0.0.1:5173",
   })
 );
 
 mongoose.connect(process.env.MONGODB_URI);
 
-app.get("/test", (req, res) => {
+app.get("/", (req, res) => {
   res.json("working");
 });
 
@@ -172,10 +172,14 @@ app.get("/places", (req, res) => {
 });
 
 app.get("/places/:id", async (req, res) => {
-  const id = req.params;
-  placeData = await placeModel.findById(id);
-  console.log(placeData);
-  res.json();
+  const {token} = req.cookies;
+  jwt.verify(token, jwtSecret, {}, async (err, user) => {
+    if (err) throw err;
+    const id = req.params.id;
+    placeData = await placeModel.findById(id);
+
+    res.json(placeData);
+  });
 });
 
 app.listen(4000);

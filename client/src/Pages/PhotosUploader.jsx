@@ -1,7 +1,7 @@
 import {useState} from "react";
 import axios from "axios";
 
-export default function PhotosUploader({addedPhotos, setAddedPhotos}) {
+export default function PhotosUploader({addedPhotos, onChange}) {
   const [photoLink, setPhotoLink] = useState("");
 
   async function addPhotoByLink(e) {
@@ -9,7 +9,7 @@ export default function PhotosUploader({addedPhotos, setAddedPhotos}) {
     const {data: filename} = await axios.post("/uploadByLink", {
       link: photoLink,
     });
-    setAddedPhotos((prev) => {
+    onChange((prev) => {
       return [...prev, filename];
     });
     setPhotoLink("");
@@ -30,7 +30,7 @@ export default function PhotosUploader({addedPhotos, setAddedPhotos}) {
       })
       .then((response) => {
         const {data: filename} = response;
-        setAddedPhotos((prev) => {
+        onChange((prev) => {
           return [...prev, ...filename];
         });
       });
@@ -56,7 +56,8 @@ export default function PhotosUploader({addedPhotos, setAddedPhotos}) {
         </button>
       </div>
       <div className=" grid gap-2 grid-cols-3 lg:grid-cols-5 md:grid-cols-4 mt-2">
-        {addedPhotos.length > 0 &&
+        {addedPhotos &&
+          addedPhotos.length > 0 &&
           addedPhotos.map((link) => (
             // Showing the added photos
             <div className="" key={link}>
