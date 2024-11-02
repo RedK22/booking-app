@@ -1,7 +1,12 @@
-import React from "react";
+import AccountNav from "./AccountNav";
 
 function AccountBooking() {
-  return <div>AccountBooking</div>;
+  return (
+    <>
+      <AccountNav />
+      <div>AccountBooking</div>
+    </>
+  );
 }
 
 export default AccountBooking;

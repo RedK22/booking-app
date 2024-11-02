@@ -55,7 +55,7 @@ export default function PhotosUploader({addedPhotos, setAddedPhotos}) {
           Add Photo
         </button>
       </div>
-      <div className=" grid gap-2 grid-cols-3 lg:grid-cols-6 md:grid-cols-4 mt-2">
+      <div className=" grid gap-2 grid-cols-3 lg:grid-cols-5 md:grid-cols-4 mt-2">
         {addedPhotos.length > 0 &&
           addedPhotos.map((link) => (
             // Showing the added photos

@@ -57,7 +57,7 @@ function Header() {
       {/* User Area*/}
       <Link
         to={user ? "/account" : "/login"}
-        className="flex gap-3 justify-center items-center border border-gray-300 transition-all hover:border-blue-500 border-2 rounded-full py-2 px-4 "
+        className="flex gap-3 justify-center items-center  border-gray-300 transition-all hover:border-blue-500 border-2 rounded-full py-2 px-4 "
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

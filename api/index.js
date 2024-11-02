@@ -146,10 +146,10 @@ app.post("/places", (req, res) => {
     if (err) throw err;
 
     const placeDoc = await placeModel.create({
-      owner: userData.id,
+      owner: user.id,
       title,
       address,
-      addedPhotos,
+      photos: addedPhotos,
       description,
       perks,
       extraInfo,
@@ -159,6 +159,23 @@ app.post("/places", (req, res) => {
     });
     res.json(placeDoc);
   });
+});
+
+app.get("/places", (req, res) => {
+  const {token} = req.cookies;
+  jwt.verify(token, jwtSecret, {}, async (err, user) => {
+    if (err) throw err;
+
+    const {id} = user;
+    res.json(await placeModel.find({owner: id}));
+  });
+});
+
+app.get("/places/:id", async (req, res) => {
+  const id = req.params;
+  placeData = await placeModel.findById(id);
+  console.log(placeData);
+  res.json();
 });
 
 app.listen(4000);
