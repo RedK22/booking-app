@@ -11,6 +11,7 @@ const multer = require("multer");
 const fs = require("fs");
 
 const userModel = require("./models/userModel");
+const placeModel = require("./models/placeModel");
 
 const bcrpytSalt = bcrypt.genSaltSync(12);
 const jwtSecret = "asduiahbnsuirbausd";
@@ -126,6 +127,38 @@ app.post("/upload", photosMiddleware.array("photos", 100), (req, res) => {
     uploadedFiles.push(newPath.replace("uploads/", ""));
   }
   res.json(uploadedFiles);
+});
+
+app.post("/places", (req, res) => {
+  const {token} = req.cookies;
+  const {
+    title,
+    address,
+    addedPhotos,
+    description,
+    perks,
+    extraInfo,
+    checkIn,
+    checkOut,
+    maxGuests,
+  } = req.body;
+  jwt.verify(token, jwtSecret, {}, async (err, user) => {
+    if (err) throw err;
+
+    const placeDoc = await placeModel.create({
+      owner: userData.id,
+      title,
+      address,
+      addedPhotos,
+      description,
+      perks,
+      extraInfo,
+      checkIn,
+      checkOut,
+      maxGuests,
+    });
+    res.json(placeDoc);
+  });
 });
 
 app.listen(4000);
